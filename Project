@@ -57,20 +57,18 @@ submit.pack()
 
 root.mainloop()
 
+----------------------x---------------------------------x-----------------------------------------
+
 PROJECT 2: Create and accessing database in SQL wit Python Integration
 
 import psycopg2
 
-# Connect to the database (creates a new database if it doesn't exist)
-sriram = psycopg2.connect(host="localhost",user="postgres",password="0070",database="sriram_1")
+sriram = psycopg2.connect(host="localhost", user="postgres", password="0070", database="sriram_1")
 cursor = sriram.cursor()
-#conn = sqlite3.connect('school.db')
-#cursor = conn.cursor()
 
-# Create the student table
 cursor.execute('''
     CREATE TABLE IF NOT EXISTS student (
-        student_id INTEGER PRIMARY KEY,
+        student_id SERIAL PRIMARY KEY,
         name TEXT,
         age INTEGER,
         sex TEXT,
@@ -83,22 +81,20 @@ cursor.execute('''
     )
 ''')
 
-# Create the teacher table
 cursor.execute('''
     CREATE TABLE IF NOT EXISTS teacher (
-        teacher_id INTEGER PRIMARY KEY,
+        teacher_id SERIAL PRIMARY KEY,
         name TEXT,
         age INTEGER,
         sex TEXT,
-        classTeacher TEXT,
+        class_Teacher TEXT,
         teacher_salary REAL
     )
 ''')
 
-# Create the principal table
 cursor.execute('''
     CREATE TABLE IF NOT EXISTS principal (
-        principal_id INTEGER PRIMARY KEY,
+        principal_id SERIAL PRIMARY KEY,
         name TEXT,
         age INTEGER,
         sex TEXT,
@@ -108,17 +104,15 @@ cursor.execute('''
     )
 ''')
 
-# Create the admin table
 cursor.execute('''
     CREATE TABLE IF NOT EXISTS admin (
-        admin_id INTEGER PRIMARY KEY,
+        admin_id SERIAL PRIMARY KEY,
         name TEXT,
         email TEXT,
         password TEXT
     )
 ''')
 
-# Function to create a student record
 def create_student():
     name = input("Enter student name: ")
     age = int(input("Enter student age: "))
@@ -132,13 +126,12 @@ def create_student():
 
     query = '''
         INSERT INTO student (name, age, sex, class, section, pythonMark, DataBaseMark, MathMark, StatsMark)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
     '''
     cursor.execute(query, (name, age, sex, class_, section, python_mark, db_mark, math_mark, stats_mark))
     sriram.commit()
     print("Student record created successfully.")
 
-# Function to read student records
 def read_students():
     query = "SELECT * FROM student"
     cursor.execute(query)
@@ -157,12 +150,9 @@ def read_students():
         print("Stats Mark:", student[9])
         print("")
 
-# Function to update a student record
 def update_student():
     student_id = int(input("Enter student ID to update: "))
-
-    # Check if the student record exists
-    check_query = "SELECT * FROM student WHERE student_id = ?"
+    check_query = "SELECT * FROM student WHERE student_id = %s"
     cursor.execute(check_query, (student_id,))
     existing_student = cursor.fetchone()
 
@@ -179,58 +169,209 @@ def update_student():
 
         update_query = '''
             UPDATE student SET
-            name = ?,
-            age = ?,
-            sex = ?,
-            class = ?,
-            section = ?,
-            pythonMark = ?,
-            DataBaseMark = ?,
-            MathMark = ?,
-            StatsMark = ?
-            WHERE student_id = ?
+            name = %s,
+            age = %s,
+            sex = %s,
+            class = %s,
+            section = %s,
+            pythonMark = %s,
+            DataBaseMark = %s,
+            MathMark = %s,
+            StatsMark = %s
+            WHERE student_id = %s
         '''
-        cursor.execute(update_query, (name, age, sex, class_, section, python_mark, db_mark, math_mark, stats_mark, student_id))
+        cursor.execute(
+            update_query,
+            (name, age, sex, class_, section, python_mark, db_mark, math_mark, stats_mark, student_id),
+        )
         sriram.commit()
         print("Student record updated successfully.")
     else:
         print("Student with ID", student_id, "does not exist.")
 
-# Function to delete a student record
 def delete_student():
     student_id = int(input("Enter student ID to delete: "))
 
-    # Check if the student record exists
-    check_query = "SELECT * FROM student WHERE student_id = ?"
+    check_query = "SELECT * FROM student WHERE student_id = %s"
     cursor.execute(check_query, (student_id,))
     existing_student = cursor.fetchone()
 
     if existing_student:
-        delete_query = "DELETE FROM student WHERE student_id = ?"
+        delete_query = "DELETE FROM student WHERE student_id = %s"
         cursor.execute(delete_query, (student_id,))
         sriram.commit()
         print("Student record deleted successfully.")
     else:
         print("Student with ID", student_id, "does not exist.")
 
-admin_name = input('admin name: ')
-admin_email = input('admin email: ')
-admin_password = input('admin password: ')
+def create_teacher():
+    name = input("Enter teacher name: ")
+    age = int(input("Enter teacher age: "))
+    sex = input("Enter teacher sex: ")
+    class_teacher = input("Enter class of teacher: ")
+    teacher_salary = float(input("Enter teacher salary: "))
+    
+    query = '''
+        INSERT INTO teacher (name, age, sex, classTeacher, teacher_salary)
+        VALUES (%s, %s, %s, %s, %s)
+    '''
+    cursor.execute(query, (name, age, sex, class_teacher, teacher_salary))
+    sriram.commit()
+    print("Teacher record created successfully.")
+
+def read_teacher():
+    query = "SELECT * FROM teacher"
+    cursor.execute(query)
+    teachers = cursor.fetchall()
+
+    for teacher in teachers:
+        print("Teacher ID:", teacher[0])
+        print("Name:", teacher[1])
+        print("Age:", teacher[2])
+        print("Sex:", teacher[3])
+        print("Class of Teacher:", teacher[4])
+        print("Teacher Salary:", teacher[5])
+        print("")
+
+def update_teacher():
+    teacher_id = int(input("Enter teacher ID to update: "))
+    check_query = "SELECT * FROM teacher WHERE teacher_id = %s"
+    cursor.execute(check_query, (teacher_id,))
+    existing_teacher = cursor.fetchone()
+
+    if existing_teacher:
+        name = input("Enter updated teacher name: ")
+        age = int(input("Enter updated teacher age: "))
+        sex = input("Enter updated teacher sex: ")
+        class_teacher = input("Enter updated class teacher: ")
+        teacher_salary = float(input("Enter updated teacher salary: "))
+
+        update_query = '''
+            UPDATE teacher SET
+            name = %s,
+            age = %s,
+            sex = %s,
+            classTeacher = %s,
+            teacher_salary = %s
+            WHERE teacher_id = %s
+        '''
+        cursor.execute(
+            update_query,
+            (name, age, sex, class_teacher, teacher_salary, teacher_id),
+        )
+        sriram.commit()
+        print("Teacher record updated successfully.")
+    else:
+        print("Teacher with ID", teacher_id, "does not exist.")
+
+def delete_teacher():
+    teacher_id = int(input("Enter teacher ID to delete: "))
+
+    check_query = "SELECT * FROM teacher WHERE teacher_id = %s"
+    cursor.execute(check_query, (teacher_id,))
+    existing_teacher = cursor.fetchone()
+
+    if existing_teacher:
+        delete_query = "DELETE FROM teacher WHERE teacher_id = %s"
+        cursor.execute(delete_query, (teacher_id,))
+        sriram.commit()
+        print("Teacher record deleted successfully.")
+    else:
+        print("Teacher with ID", teacher_id, "does not exist.")
+
+def create_principal():
+    name = input("Enter principal name: ")
+    age = int(input("Enter principal age: "))
+    sex = input("Enter principal sex: ")
+    principal_id = int(input("Enter principal ID: "))
+    principal_salary = float(input("Enter principal salary: "))
+    
+    query = '''
+        INSERT INTO principal (name, age, sex, principal_id, principal_salary)
+        VALUES (%s, %s, %s, %s, %s)
+    '''
+    cursor.execute(query, (name, age, sex, principal_id, principal_salary))
+    sriram.commit()
+    print("Principal record created successfully.")
+
+def read_principal():
+    query = "SELECT * FROM principal"
+    cursor.execute(query)
+    principals = cursor.fetchall()
+
+    for principal in principals:
+        print("Principal ID:", principal[0])
+        print("Name:", principal[1])
+        print("Age:", principal[2])
+        print("Sex:", principal[3])
+        print("Principal ID:", principal[4])
+        print("Principal Salary:", principal[5])
+        print("")
+
+def update_principal():
+    principal_id = int(input("Enter principal ID to update: "))
+    check_query = "SELECT * FROM principal WHERE principal_id = %s"
+    cursor.execute(check_query, (principal_id,))
+    existing_principal = cursor.fetchone()
+
+    if existing_principal:
+        name = input("Enter updated principal name: ")
+        age = int(input("Enter updated principal age: "))
+        sex = input("Enter updated principal sex: ")
+        principal_id = int(input("Enter updated principal ID: "))
+        principal_salary = float(input("Enter updated principal salary: "))
+
+        update_query = '''
+            UPDATE principal SET
+            name = %s,
+            age = %s,
+            sex = %s,
+            principal_id = %s,
+            principal_salary = %s
+            WHERE principal_id = %s
+        '''
+        cursor.execute(
+            update_query,
+            (name, age, sex, principal_id, principal_salary, principal_id),
+        )
+        sriram.commit()
+        print("Principal record updated successfully.")
+    else:
+        print("Principal with ID", principal_id, "does not exist.")
+
+def delete_principal():
+    principal_id = int(input("Enter principal ID to delete: "))
+
+    check_query = "SELECT * FROM principal WHERE principal_id = %s"
+    cursor.execute(check_query, (principal_id,))
+    existing_principal = cursor.fetchone()
+
+    if existing_principal:
+        delete_query = "DELETE FROM principal WHERE principal_id = %s"
+        cursor.execute(delete_query, (principal_id,))
+        sriram.commit()
+        print("Principal record deleted successfully.")
+    else:
+        print("Principal with ID", principal_id, "does not exist.")
+
+admin_name = input("admin name: ")
+admin_email = input("admin email: ")
+admin_password = input("admin password: ")
 admin = True
 
 if admin:
-    print('Press 1 for students')
-    print('Press 2 for teachers')
-    print('Press 3 for Principal')
-    print('Press any other key to quit')
+    print("Press 1 for students")
+    print("Press 2 for teachers")
+    print("Press 3 for Principal")
+    print("Press any other key to quit")
 
     key = int(input("Enter your choice: "))
 
     if key == 1:
-        print('Press 1 to create a student')
-        print('Press 2 to read student records')
-        print('Press 3 to update a student record')
-        print('Press 4 to delete a student record')
+        print("Press 1 to create a student")
+        print("Press 2 to read student records")
+        print("Press 3 to update a student record")
+        print("Press 4 to delete a student record")
 
         operation = int(input("Enter your choice: "))
 
@@ -244,12 +385,12 @@ if admin:
             delete_student()
         else:
             print("Invalid choice.")
-            
-    if key == 2:
-        print('Press 1 to create a teacher')
-        print('Press 2 to read teacher records')
-        print('Press 3 to update a teacher record')
-        print('Press 4 to delete a teacher record')
+
+    elif key == 2:
+        print("Press 1 to create a teacher")
+        print("Press 2 to read teacher records")
+        print("Press 3 to update a teacher record")
+        print("Press 4 to delete a teacher record")
 
         operation = int(input("Enter your choice: "))
 
@@ -263,12 +404,12 @@ if admin:
             delete_teacher()
         else:
             print("Invalid choice.")
-            
-    if key == 3:
-        print('Press 1 to create a principal')
-        print('Press 2 to read principal records')
-        print('Press 3 to update a principal record')
-        print('Press 4 to delete a principal record')
+
+    elif key == 3:
+        print("Press 1 to create a principal")
+        print("Press 2 to read principal records")
+        print("Press 3 to update a principal record")
+        print("Press 4 to delete a principal record")
 
         operation = int(input("Enter your choice: "))
 
@@ -283,9 +424,12 @@ if admin:
         else:
             print("Invalid choice.")
 
-# Close the database connection
+    else:
+        print("Exiting.")
+
 sriram.close()
 
+----------------------x---------------------------------x-----------------------------------------
 
 Project 3: To Fetch Data from URL
 import requests
@@ -325,3 +469,6 @@ if response.status_code == 200:
 
 else:
     print(f"Request failed with status code: {response.status_code}")
+    
+    
+  ----------------------x---------------------------------x-----------------------------------------

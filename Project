@@ -1,4 +1,293 @@
-Project 3: 
+PROJECT 1 : To create a STOPWATCH using GUI in Python
+
+import tkinter as tk
+
+seconds = 0
+minutes = 0
+hour = 0
+timer_id = None
+
+def fun1():
+    global seconds, minutes, hour, timer_id
+    seconds += 1
+    if seconds == 60:
+        seconds = 0
+        minutes += 1
+    if minutes == 60:
+        minutes = 0
+        hour += 1
+    current_time = f'{hour:02d}:{minutes:02d}:{seconds:02d}'
+    label.config(text=current_time)
+    timer_id = root.after(1000, fun1)
+
+def start():
+    global timer_id
+    if timer_id is None:
+        fun1()
+
+def stop():
+    global timer_id
+    if timer_id is not None:
+        root.after_cancel(timer_id)
+        timer_id = None
+
+def reset():
+    global seconds, minutes, hour
+    seconds = 0
+    minutes = 0
+    hour = 0
+    label.config(text="00:00:00")
+    stop()
+
+root = tk.Tk()
+root.title("First Application")
+root.geometry('300x300')
+
+label = tk.Label(root, text="00:00:00")
+label.pack()
+
+submit = tk.Button(root, text='Start', command=start)
+submit.pack()
+
+submit = tk.Button(root, text='Stop', command=stop)
+submit.pack()
+
+submit = tk.Button(root, text='Reset', command=reset)
+submit.pack()
+
+root.mainloop()
+
+PROJECT 2: Create and accessing database in SQL wit Python Integration
+
+import psycopg2
+
+# Connect to the database (creates a new database if it doesn't exist)
+sriram = psycopg2.connect(host="localhost",user="postgres",password="0070",database="sriram_1")
+cursor = sriram.cursor()
+#conn = sqlite3.connect('school.db')
+#cursor = conn.cursor()
+
+# Create the student table
+cursor.execute('''
+    CREATE TABLE IF NOT EXISTS student (
+        student_id INTEGER PRIMARY KEY,
+        name TEXT,
+        age INTEGER,
+        sex TEXT,
+        class TEXT,
+        section TEXT,
+        pythonMark INTEGER,
+        DataBaseMark INTEGER,
+        MathMark INTEGER,
+        StatsMark INTEGER
+    )
+''')
+
+# Create the teacher table
+cursor.execute('''
+    CREATE TABLE IF NOT EXISTS teacher (
+        teacher_id INTEGER PRIMARY KEY,
+        name TEXT,
+        age INTEGER,
+        sex TEXT,
+        classTeacher TEXT,
+        teacher_salary REAL
+    )
+''')
+
+# Create the principal table
+cursor.execute('''
+    CREATE TABLE IF NOT EXISTS principal (
+        principal_id INTEGER PRIMARY KEY,
+        name TEXT,
+        age INTEGER,
+        sex TEXT,
+        teacher_id INTEGER,
+        principal_salary REAL,
+        FOREIGN KEY (teacher_id) REFERENCES teacher (teacher_id)
+    )
+''')
+
+# Create the admin table
+cursor.execute('''
+    CREATE TABLE IF NOT EXISTS admin (
+        admin_id INTEGER PRIMARY KEY,
+        name TEXT,
+        email TEXT,
+        password TEXT
+    )
+''')
+
+# Function to create a student record
+def create_student():
+    name = input("Enter student name: ")
+    age = int(input("Enter student age: "))
+    sex = input("Enter student sex: ")
+    class_ = input("Enter student class: ")
+    section = input("Enter student section: ")
+    python_mark = int(input("Enter Python marks: "))
+    db_mark = int(input("Enter Database marks: "))
+    math_mark = int(input("Enter Math marks: "))
+    stats_mark = int(input("Enter Statistics marks: "))
+
+    query = '''
+        INSERT INTO student (name, age, sex, class, section, pythonMark, DataBaseMark, MathMark, StatsMark)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    '''
+    cursor.execute(query, (name, age, sex, class_, section, python_mark, db_mark, math_mark, stats_mark))
+    sriram.commit()
+    print("Student record created successfully.")
+
+# Function to read student records
+def read_students():
+    query = "SELECT * FROM student"
+    cursor.execute(query)
+    students = cursor.fetchall()
+
+    for student in students:
+        print("Student ID:", student[0])
+        print("Name:", student[1])
+        print("Age:", student[2])
+        print("Sex:", student[3])
+        print("Class:", student[4])
+        print("Section:", student[5])
+        print("Python Mark:", student[6])
+        print("Database Mark:", student[7])
+        print("Math Mark:", student[8])
+        print("Stats Mark:", student[9])
+        print("")
+
+# Function to update a student record
+def update_student():
+    student_id = int(input("Enter student ID to update: "))
+
+    # Check if the student record exists
+    check_query = "SELECT * FROM student WHERE student_id = ?"
+    cursor.execute(check_query, (student_id,))
+    existing_student = cursor.fetchone()
+
+    if existing_student:
+        name = input("Enter updated student name: ")
+        age = int(input("Enter updated student age: "))
+        sex = input("Enter updated student sex: ")
+        class_ = input("Enter updated student class: ")
+        section = input("Enter updated student section: ")
+        python_mark = int(input("Enter updated Python marks: "))
+        db_mark = int(input("Enter updated Database marks: "))
+        math_mark = int(input("Enter updated Math marks: "))
+        stats_mark = int(input("Enter updated Statistics marks: "))
+
+        update_query = '''
+            UPDATE student SET
+            name = ?,
+            age = ?,
+            sex = ?,
+            class = ?,
+            section = ?,
+            pythonMark = ?,
+            DataBaseMark = ?,
+            MathMark = ?,
+            StatsMark = ?
+            WHERE student_id = ?
+        '''
+        cursor.execute(update_query, (name, age, sex, class_, section, python_mark, db_mark, math_mark, stats_mark, student_id))
+        sriram.commit()
+        print("Student record updated successfully.")
+    else:
+        print("Student with ID", student_id, "does not exist.")
+
+# Function to delete a student record
+def delete_student():
+    student_id = int(input("Enter student ID to delete: "))
+
+    # Check if the student record exists
+    check_query = "SELECT * FROM student WHERE student_id = ?"
+    cursor.execute(check_query, (student_id,))
+    existing_student = cursor.fetchone()
+
+    if existing_student:
+        delete_query = "DELETE FROM student WHERE student_id = ?"
+        cursor.execute(delete_query, (student_id,))
+        sriram.commit()
+        print("Student record deleted successfully.")
+    else:
+        print("Student with ID", student_id, "does not exist.")
+
+admin_name = input('admin name: ')
+admin_email = input('admin email: ')
+admin_password = input('admin password: ')
+admin = True
+
+if admin:
+    print('Press 1 for students')
+    print('Press 2 for teachers')
+    print('Press 3 for Principal')
+    print('Press any other key to quit')
+
+    key = int(input("Enter your choice: "))
+
+    if key == 1:
+        print('Press 1 to create a student')
+        print('Press 2 to read student records')
+        print('Press 3 to update a student record')
+        print('Press 4 to delete a student record')
+
+        operation = int(input("Enter your choice: "))
+
+        if operation == 1:
+            create_student()
+        elif operation == 2:
+            read_students()
+        elif operation == 3:
+            update_student()
+        elif operation == 4:
+            delete_student()
+        else:
+            print("Invalid choice.")
+            
+    if key == 2:
+        print('Press 1 to create a teacher')
+        print('Press 2 to read teacher records')
+        print('Press 3 to update a teacher record')
+        print('Press 4 to delete a teacher record')
+
+        operation = int(input("Enter your choice: "))
+
+        if operation == 1:
+            create_teacher()
+        elif operation == 2:
+            read_teacher()
+        elif operation == 3:
+            update_teacher()
+        elif operation == 4:
+            delete_teacher()
+        else:
+            print("Invalid choice.")
+            
+    if key == 3:
+        print('Press 1 to create a principal')
+        print('Press 2 to read principal records')
+        print('Press 3 to update a principal record')
+        print('Press 4 to delete a principal record')
+
+        operation = int(input("Enter your choice: "))
+
+        if operation == 1:
+            create_principal()
+        elif operation == 2:
+            read_principal()
+        elif operation == 3:
+            update_principal()
+        elif operation == 4:
+            delete_principal()
+        else:
+            print("Invalid choice.")
+
+# Close the database connection
+sriram.close()
+
+
+Project 3: To Fetch Data from URL
 import requests
 url = "https://api.github.com/repos/pandas-dev/pandas/issues"
 response = requests.get(url)
